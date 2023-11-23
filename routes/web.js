@@ -1,6 +1,7 @@
 const express = require('express')
 const UserController = require('../controllers/UserController')
 const ProductController = require('../controllers/ProductController')
+const CategoryController = require('../controllers/CategoryController')
 const router = express.Router()
 
 
@@ -22,6 +23,15 @@ router.get('/getProductDetail',ProductController.getProductDetail)
 router.get('/getAdminProduct',ProductController.getAdminProduct)
 router.post('/updateProduct',ProductController.updateProduct)
 router.get('/deleteProduct',ProductController.deleteProduct)
+
+
+//Category Controller
+router.post('/categoryinsert',CategoryController.categoryinsert)
+router.get('/categorydisplay',CategoryController.categorydisplay)
+router.post('/categoryupdate',CategoryController.categoryupdate)
+router.get('/categoryview',CategoryController.categoryview)
+router.get('/categorydelete',CategoryController.categorydelete)
+
 
 
 
