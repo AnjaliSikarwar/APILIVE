@@ -142,15 +142,15 @@ class UserController {
         try {
             // console.log('password change')
             // const { name, email, id } = req.data1
-            const { oldpassword, newpassword, cpassword } = req.body
+            const { oldpassword, newpassword, confirmpassword } = req.body
             //for password check
-            if (oldpassword && newpassword && cpassword) {
+            if (oldpassword && newpassword && confirmpassword) {
                 const user = await UserModel.findById(req.params._id)
                 const ismatched = await bcrypt.compare(oldpassword, user.password)
                 if (!ismatched) {
                     res.send({ "status": 400, "message": "Old password is incorrect" })
                 } else {
-                    if (newpassword != cpassword) {
+                    if (newpassword != confirmpassword) {
                         res.send({ "status": "failed", "message": "password does not match" })
                     } else {
                         const newhashpassword = await bcrypt.hash(newpassword, 10)
@@ -183,7 +183,7 @@ class UserController {
                 folder: 'profileimageapi',
             });
             const update = await UserModel.findByIdAndUpdate(req.params.id, {
-                image:{
+                image: {
                     public_id: image_upload.public_id,
                     url: image_upload.secure_url,
                 },
@@ -200,8 +200,6 @@ class UserController {
             res.send(err)
         }
     }
-
-  
 
     static View = async (req, res) => {
 
