@@ -15,7 +15,7 @@ class CategoryController {
             const { cname, image } = req.body
             const file = req.files.image
             const image_upload = await cloudinary.uploader.upload(file.tempFilePath, {
-                folder: 'profileimageapi',
+                folder: 'categoryimageapi',
             })
             const result = new CategoryModel({
                 cname: cname,
@@ -61,7 +61,7 @@ class CategoryController {
                 await cloudinary.uploader.destroy(imageid)
                 const file = req.files.image
                 const image_upload = await cloudinary.uploader.upload(file.tempFilePath, {
-                    folder: 'profileimageapi',
+                    folder: 'categoryimageapi',
                 })
                 var data = {
                     cname: cname,
@@ -72,7 +72,7 @@ class CategoryController {
                 }
             } else {
                 var data = {
-                    cname: cname,
+                    cname:req.body.cname
                 }
             }
             const update = await CategoryModel.findByIdAndUpdate(req.params.id, data)

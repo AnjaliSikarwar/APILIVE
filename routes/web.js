@@ -28,7 +28,7 @@ router.get('/deleteProduct',ProductController.deleteProduct)
 //Category Controller
 router.post('/categoryinsert',CategoryController.categoryinsert)
 router.get('/categorydisplay',CategoryController.categorydisplay)
-router.post('/categoryupdate',CategoryController.categoryupdate)
+router.post('/categoryupdate/:id',CategoryController.categoryupdate)
 router.get('/categoryview',CategoryController.categoryview)
 router.get('/categorydelete',CategoryController.categorydelete)
 
