@@ -19,9 +19,9 @@ router.get('/updateprofile/:id',UserController.updateProfile)
 //product Controller
 router.get('/getAllProducts',ProductController.getAllProducts)
 router.post('/createProduct',ProductController.createProduct)
-router.get('/getProductDetail',ProductController.getProductDetail)
+router.get('/getProductDetail/:id',ProductController.getProductDetail)
 router.get('/getAdminProduct',ProductController.getAdminProduct)
-router.post('/updateProduct',ProductController.updateProduct)
+router.post('/updateProduct/:id',ProductController.updateProduct)
 router.get('/deleteProduct',ProductController.deleteProduct)
 
 
