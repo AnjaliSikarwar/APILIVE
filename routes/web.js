@@ -3,7 +3,7 @@ const UserController = require('../controllers/UserController')
 const ProductController = require('../controllers/ProductController')
 const CategoryController = require('../controllers/CategoryController')
 const router = express.Router()
-const checkauth = require('../middlewear/auth');
+const checkauth = require('../middleware/auth');
 
 
 
