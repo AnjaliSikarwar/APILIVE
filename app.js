@@ -7,10 +7,10 @@ const connectdb = require('./db/connectdb')
 const fileUpload = require("express-fileupload");
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
-
+app.use(cookieParser()) // for getting token in auth
 
 app.use(cors())// for api communication
-app.use(cookieParser()) // for getting token in auth
+
 
 // for dataget in api
 app.use(express.json())
