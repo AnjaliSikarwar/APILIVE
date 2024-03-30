@@ -24,6 +24,22 @@ class UserController {
         }
     }
 
+    static getuserdetails = async (req,res) => {
+        try {
+            // const {id, name, email} = req.data1
+            const user = await UserModel.findById(req.data1.id)
+            // console.log(user)
+            res.status(201).json({
+                status: 'success',
+                message: 'successful',
+                user,
+            })
+            res.send('hello user')
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     static userinsert = async (req, res) => {
         const { name, email, password, confirmpassword } = req.body
         const file = req.files.image

@@ -8,6 +8,7 @@ const router = express.Router()
 
 //usercontroller
 router.get('/getalluser',UserController.getalluser)
+router.get('/me',checkauth,UserController.getuserdetails)
 router.post('/userinsert',UserController.userinsert)
 router.post('/loginUser',UserController.loginUser)
 router.get('/logoutUser',UserController.logoutUser)

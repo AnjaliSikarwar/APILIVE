@@ -7,12 +7,15 @@ const checkauth = async (req, res, next) => {
     //token get
     const { token } = req.cookies // here token is a variable with the help of req.cookies we can get token  
     if (!token) {                   
-        res.redirect('/')
+        // res.redirect('/')
+        res 
+             .status(401)
+             .json({status: "failed", message: "Unauthorized user please"})
     } else {
         const verifytoken = jwt.verify(token, 'anjali@123')
         //for user data show
         const data = await UserModel.findOne({ _id: verifytoken.ID })
-        console.log(data)
+        //console.log(data)
         req.data1 = data
         // console.log(verifytoken) 
      next()   
