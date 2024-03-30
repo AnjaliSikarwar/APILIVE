@@ -10,7 +10,7 @@ const checkauth = async (req, res, next) => {
         // res.redirect('/')
         res 
              .status(401)
-             .json({status: "failed", message: "Unauthorized user please"})
+             .json({status: "failed", message: "Unauthorized user please no token"})
     } else {
         const verifytoken = jwt.verify(token, 'anjali@123')
         //for user data show
