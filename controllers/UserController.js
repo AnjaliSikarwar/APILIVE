@@ -106,7 +106,7 @@ class UserController {
                         // console.log(token)
                         res
                             .status(201) //create
-                            .send({ status: "success", message: "Login Successfully with web Token😃🍻", "token": token });
+                            .send({ status: "success", message: "Login Successfully with web Token😃🍻", "token": token, user });
 
                     } else {
                         res.send({ status: "failed", message: "ᴇᴍᴀɪʟ or password is not valid😓" });
