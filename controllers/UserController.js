@@ -226,16 +226,22 @@ class UserController {
         });
     }
 
-    static logoutUser = async (req, res) => {
+    static logout = async (req,res) => {
         try {
-            const logout = await UserModel.findById(req.params.id)
-            res.clearCookie('token')
-            res.send({ status: "success", message: "logout successfull 😃🍻", logout });
-        } catch (err) {
-            console.log(err)
-            res.send(err)
+            res.cookie('token', null, {
+              expires: new Date(Date.now()),
+              httpOnly: true,  
+            })
+
+            res.status(200).json({
+                success: true,
+                message: 'Logged Out',
+            })
+        } catch (error) {
+           console.log(error) 
         }
     }
+
 }
 
 
