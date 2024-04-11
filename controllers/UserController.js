@@ -161,7 +161,7 @@ class UserController {
             const { oldpassword, newpassword, confirmpassword } = req.body
             //for password check
             if (oldpassword && newpassword && confirmpassword) {
-                const user = await UserModel.findById(req.params._id)
+                const user = await UserModel.findById(req.data1._id)
                 const ismatched = await bcrypt.compare(oldpassword, user.password)
                 if (!ismatched) {
                     res.send({ "status": 400, "message": "Old password is incorrect" })
@@ -170,7 +170,7 @@ class UserController {
                         res.send({ "status": "failed", "message": "password does not match" })
                     } else {
                         const newhashpassword = await bcrypt.hash(newpassword, 10)
-                        const r = await UserModel.findByIdAndUpdate(req.params._id, {
+                        const r = await UserModel.findByIdAndUpdate(req.data1._id, {
                             password: newhashpassword,
                         })
                         res.send({ "status": "success", "message": "Password changed succesfully" })
@@ -189,7 +189,7 @@ class UserController {
         try {
             // console.log(req.body);
             // const {avatar} = req.body // for now we dont need this
-            const updateimage = await UserModel.findById(req.params.id)
+            const updateimage = await UserModel.findById(req.data1.id)
             // console.log(updateimage); // full data we'r getting
             const imageid = updateimage.image.public_id
             console.log(imageid)
@@ -198,7 +198,7 @@ class UserController {
             const image_upload = await cloudinary.uploader.upload(file.tempFilePath, {
                 folder: 'profileimageapi',
             });
-            const update = await UserModel.findByIdAndUpdate(req.params.id, {
+            const update = await UserModel.findByIdAndUpdate(req.data1.id, {
                 image: {
                     public_id: image_upload.public_id,
                     url: image_upload.secure_url,
