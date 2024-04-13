@@ -161,7 +161,7 @@ class UserController {
             const { oldpassword, newpassword, confirmpassword } = req.body
             //for password check
             if (oldpassword && newpassword && confirmpassword) {
-                const user = await UserModel.findById(req.data1._id)
+                const user = await UserModel.findById(req.data1.id)
                 const ismatched = await bcrypt.compare(oldpassword, user.password)
                 if (!ismatched) {
                     res.send({ "status": 400, "message": "Old password is incorrect" })
@@ -170,7 +170,7 @@ class UserController {
                         res.send({ "status": "failed", "message": "password does not match" })
                     } else {
                         const newhashpassword = await bcrypt.hash(newpassword, 10)
-                        const r = await UserModel.findByIdAndUpdate(req.data1._id, {
+                        const r = await UserModel.findByIdAndUpdate(req.data1.id, {
                             password: newhashpassword,
                         })
                         res.send({ "status": "success", "message": "Password changed succesfully" })
@@ -186,35 +186,48 @@ class UserController {
     }
 
     static updateProfile = async (req, res) => {
-        try {
-            // console.log(req.body);
-            // const {avatar} = req.body // for now we dont need this
-            const updateimage = await UserModel.findById(req.data1.id)
-            // console.log(updateimage); // full data we'r getting
-            const imageid = updateimage.image.public_id
-            console.log(imageid)
-            await cloudinary.uploader.destroy(imageid)
+       try {
+        // console.log(req.files.avtar)
+        // console.log(req.body)
+        // const {id} = req.data1
+        if(req.flies){
+            // Update the profile of user
+            const user = await UserModel.findById(req.data1.id)
+            const image_id = user.image.public_id
+            //console.log(image_id)
+            await cloudinary.uploader.destroy(image_id)
             const file = req.files.image
-            const image_upload = await cloudinary.uploader.upload(file.tempFilePath, {
+            const myCloud = await cloudinary.uploader.upload(file.tempFilePath, {
                 folder: 'profileimageapi',
-            });
-            const update = await UserModel.findByIdAndUpdate(req.data1.id, {
+                width: 150,
+                crop: 'scale',
+            })
+            var data = {
+                name: req.body.name,
+                email: req.body.email,
+
                 image: {
-                    public_id: image_upload.public_id,
-                    url: image_upload.secure_url,
+                    public_id: myCloud.public_id,
+                    url: myCloud.secure_url,
                 },
-            })
-            await update.save()
-            res.send({
-                "status": "success",
-                "message": "upadate succesfully 😃🍻",
-                update,
-                image: image_upload.secure_url,
-            })
-        } catch (err) {
-            console.log(err)
-            res.send(err)
+            }
+        } else{
+            var data ={
+                name: req.body.name,
+                email: req.body.email,
+            }
         }
+        //update code 
+        const result = await UserModel.findByIdAndUpdate(req.data1.id , data)
+
+        res.status(200).json({
+            success: true,
+            message: 'Profile updated successfully',
+            result,
+        })
+       } catch (error) {
+          console.log(error)
+       }
     }
 
     static View = async (req, res) => {
