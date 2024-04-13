@@ -185,7 +185,7 @@ class UserController {
         }
     }
 
-    static updateProfile = async (req, res) => {
+    static updateprofile = async (req, res) => {
        try {
         // console.log(req.files.avtar)
         // console.log(req.body)

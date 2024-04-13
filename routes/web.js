@@ -15,7 +15,7 @@ router.post('/loginUser',UserController.loginUser)
 router.get('/logout',UserController.logout)
 router.get('/view',UserController.View)
 router.post('/updatepassword',checkauth,UserController.updatePassword)
-router.get('/updateprofile',checkauth,UserController.updateProfile)
+router.get('/updateprofile',checkauth,UserController.updateprofile)
 
 
 //product Controller
