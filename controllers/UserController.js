@@ -1,6 +1,6 @@
-const UserModel = require('../models/User')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
+const UserModel = require('../models/User');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
@@ -11,251 +11,226 @@ cloudinary.config({
 
 class UserController {
 
+    // Get all users
     static getalluser = async (req, res) => {
         try {
-            const getalluserData = await UserModel.find()
+            const getalluserData = await UserModel.find();
             res.status(200).json({
                 success: true,
-                getalluserData
-            })
+                data: getalluserData
+            });
         } catch (err) {
-            res.send(err)
-            console.log(err)
+            console.error(err);
+            res.status(500).json({
+                success: false,
+                message: 'Internal Server Error'
+            });
         }
     }
 
-    static getuserdetails = async (req,res) => {
+    // Get details of a specific user
+    static getuserdetails = async (req, res) => {
         try {
-            // const {id, name, email} = req.data1
-            const user = await UserModel.findById(req.data1._id)
-            // console.log(user)
-            res.status(201).json({
-                status: 'success',
-                message: 'successful',
-                user,
-            })
-            res.send('hello user')
+            const user = await UserModel.findById(req.params.id);
+            res.status(200).json({
+                success: true,
+                data: user
+            });
         } catch (error) {
-            console.log(error)
+            console.error(error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal Server Error'
+            });
         }
     }
 
+    // Insert a new user
     static userinsert = async (req, res) => {
-        const { name, email, password, confirmpassword } = req.body
-        const file = req.files.image
-        // image upload code 
-        const image_upload = await cloudinary.uploader.upload(file.tempFilePath, {
-            folder: 'profileimageapi'
-        })
-        const user = await UserModel.findOne({ email: email })
-        // console.log(image_upload)
-        if (user) {
-            res
-                .status(401)
-                .json({ status: "failed", message: "This email is already exits" });
-        } else {
-            if (name && email && password && confirmpassword) {
-                if (password == confirmpassword) {
-                    try {
-                        const hashpassword = await bcrypt.hash(password, 10);
-                        const result = new UserModel({
-                            name: name,
-                            email: email,
-                            password: hashpassword,
-                            confirmpassword: confirmpassword,
-                            image: {
-                                public_id: image_upload.public_id,
-                                url: image_upload.secure_url,
-                            }
-                        })
-                        await result.save()
-                        res.status(201).json({
-                            status: "success",
-                            message: "Registration Successfully",
-                        })
-                    } catch (error) {
-                        console.log(error)
-                    }
-                } else {
-                    res
-                        .status(401)
-                        .json({ status: "error", message: "password and confirmpassword does not match" });
-                }
-            } else {
-                res
-                    .status(401)
-                    .json({ status: "failed", message: "all field required" });
-            }
-        }
+        try {
+            // Extract data from request body
+            const { name, email, password, confirmpassword } = req.body;
+            const file = req.files.image;
 
+            // Upload image to Cloudinary
+            const image_upload = await cloudinary.uploader.upload(file.tempFilePath, {
+                folder: 'profileimageapi'
+            });
+
+            // Check if user already exists
+            const user = await UserModel.findOne({ email: email });
+            if (user) {
+                return res.status(401).json({ success: false, message: "Email already exists" });
+            }
+
+            // Hash password
+            const hashpassword = await bcrypt.hash(password, 10);
+
+            // Create new user instance
+            const newUser = new UserModel({
+                name: name,
+                email: email,
+                password: hashpassword,
+                image: {
+                    public_id: image_upload.public_id,
+                    url: image_upload.secure_url
+                }
+            });
+
+            // Save user to database
+            await newUser.save();
+
+            res.status(201).json({
+                success: true,
+                message: "Registration successful"
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal Server Error'
+            });
+        }
     }
 
+    // Login user
     static loginUser = async (req, res) => {
         try {
             const { email, password } = req.body;
-            // console.log(password)
-            if (email && password) {
-                const user = await UserModel.findOne({ email: email })
-                // console.log(user.password)
-                if (user != null) {
-                    const isMatched = await bcrypt.compare(password, user.password)
-                    if ((user.email === email) && isMatched) {
-                        // verify token
-                        const token = jwt.sign({ ID: user._id }, 'anjali@123');
-                        res.cookie('token', token)
-                        // console.log(token)
-                        res
-                            .status(201) //create
-                            .send({ status: "success", message: "Login Successfully with web Token😃🍻", "token": token, user });
 
-                    } else {
-                        res.send({ status: "failed", message: "ᴇᴍᴀɪʟ or password is not valid😓" });
-                    }
-                } else {
-                    res.send({ status: "failed", message: "You are not a Registerd User😓" });
-                }
-            } else {
-                res.send({ status: "failed", message: "All fields are required😓" });
+            const user = await UserModel.findOne({ email: email });
+            if (!user) {
+                return res.status(401).json({ success: false, message: "Invalid email or password" });
             }
-        } catch (err) {
-            console.log(err)
+
+            const isMatched = await bcrypt.compare(password, user.password);
+            if (!isMatched) {
+                return res.status(401).json({ success: false, message: "Invalid email or password" });
+            }
+
+            // Generate JWT token
+            const token = jwt.sign({ ID: user._id }, 'your_secret_key');
+            res.cookie('token', token);
+            res.status(200).json({
+                success: true,
+                message: "Login successful",
+                token: token,
+                user: user
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal Server Error'
+            });
         }
     }
 
-    // static updatePassword = async (req, res) => {
-    //     // console.log(req.user)
-    //     try {
-    //         const { oldPassword, newPassword, confirmpassword } = req.body
-
-    //         if (oldPassword && newPassword && confirmpassword) {
-    //             const user = await UserModel.findById(_id);
-    //             const isMatch = await bcrypt.compare(oldPassword, user.password)
-    //             //const isPasswordMatched = await userModel.comparePassword(req.body.oldPassword);
-    //             if (!isMatch) {
-    //                 res.send({ "status": 400, "message": "Old password is incorrect" })
-    //             } else {
-    //                 if (newPassword !== confirmpassword) {
-    //                     res.send({ "status": "failed", "message": "password does not match" })
-    //                 } else {
-    //                     const salt = await bcrypt.genSalt(10)
-    //                     const newHashPassword = await bcrypt.hash(newPassword, salt)
-    //                     //console.log(req.user)
-    //                     await UserModel.findByIdAndUpdate(_id, { $set: { password: newHashPassword } })
-    //                     res.send({ "status": "success", "message": "Password changed succesfully" })
-    //                 }
-    //             }
-    //         } else {
-    //             res.send({ "status": "failed", "message": "All Fields are Required" })
-    //         }
-
-    //     } catch (err) {
-    //         res.send(err)
-    //         console.log(err)
-    //     }
-    // }
-
+    // Update password
     static updatePassword = async (req, res) => {
         try {
-            // console.log('password change')
-            // const { name, email, id } = req.data1
-            const { oldpassword, newpassword, confirmpassword } = req.body
-            //for password check
-            if (oldpassword && newpassword && confirmpassword) {
-                const user = await UserModel.findById(req.data1.id)
-                const ismatched = await bcrypt.compare(oldpassword, user.password)
-                if (!ismatched) {
-                    res.send({ "status": 400, "message": "Old password is incorrect" })
-                } else {
-                    if (newpassword != confirmpassword) {
-                        res.send({ "status": "failed", "message": "password does not match" })
-                    } else {
-                        const newhashpassword = await bcrypt.hash(newpassword, 10)
-                        const r = await UserModel.findByIdAndUpdate(req.data1.id, {
-                            password: newhashpassword,
-                        })
-                        res.send({ "status": "success", "message": "Password changed succesfully" })
-                    }
-                }
-            } else {
-                res.send({ "status": "failed", "message": "All Fields are Required" })
+            const { oldpassword, newpassword, confirmpassword } = req.body;
+
+            const user = await UserModel.findById(req.user._id);
+            const isMatched = await bcrypt.compare(oldpassword, user.password);
+            if (!isMatched) {
+                return res.status(400).json({ success: false, message: "Old password is incorrect" });
             }
 
+            if (newpassword !== confirmpassword) {
+                return res.status(400).json({ success: false, message: "New passwords do not match" });
+            }
+
+            // Hash new password
+            const newHashPassword = await bcrypt.hash(newpassword, 10);
+            await UserModel.findByIdAndUpdate(req.user._id, { password: newHashPassword });
+
+            res.status(200).json({ success: true, message: "Password changed successfully" });
         } catch (error) {
-            console.log(error)
+            console.error(error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal Server Error'
+            });
         }
     }
 
+    // Update user profile
     static updateprofile = async (req, res) => {
-       try {
-        // console.log(req.files.avtar)
-        // console.log(req.body)
-        // const {id} = req.data1
-        if(req.flies){
-            // Update the profile of user
-            const user = await UserModel.findById(req.data1.id)
-            const image_id = user.image.public_id
-            //console.log(image_id)
-            await cloudinary.uploader.destroy(image_id)
-            const file = req.files.image
-            const myCloud = await cloudinary.uploader.upload(file.tempFilePath, {
-                folder: 'profileimageapi',
-                width: 150,
-                crop: 'scale',
-            })
-            var data = {
-                name: req.body.name,
-                email: req.body.email,
-
-                image: {
-                    public_id: myCloud.public_id,
-                    url: myCloud.secure_url,
-                },
-            }
-        } else{
-            var data ={
-                name: req.body.name,
-                email: req.body.email,
-            }
-        }
-        //update code 
-        const result = await UserModel.findByIdAndUpdate(req.data1.id , data)
-
-        res.status(200).json({
-            success: true,
-            message: 'Profile updated successfully',
-            result,
-        })
-       } catch (error) {
-          console.log(error)
-       }
-    }
-
-    static View = async (req, res) => {
-
-        const view = await UserModel.findById(req.params.id)
-        res.status(200).json({
-            success: true,
-            view,
-        });
-    }
-
-    static logout = async (req,res) => {
         try {
-            res.cookie('token', null, {
-              expires: new Date(Date.now()),
-              httpOnly: true,  
-            })
+            const { name, email } = req.body;
+            const updates = { name, email };
+
+            if (req.files && req.files.image) {
+                // Upload new profile image
+                const file = req.files.image;
+                const image_upload = await cloudinary.uploader.upload(file.tempFilePath, {
+                    folder: 'profileimageapi',
+                    width: 150,
+                    crop: 'scale'
+                });
+                updates.image = {
+                    public_id: image_upload.public_id,
+                    url: image_upload.secure_url
+                };
+            }
+
+            // Update user profile
+            await UserModel.findByIdAndUpdate(req.user._id, updates);
 
             res.status(200).json({
                 success: true,
-                message: 'Logged Out',
-            })
+                message: 'Profile updated successfully'
+            });
         } catch (error) {
-           console.log(error) 
+            console.error(error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal Server Error'
+            });
         }
     }
 
+    // View user by ID
+    static View = async (req, res) => {
+        try {
+            const user = await UserModel.findById(req.params.id);
+            if (!user) {
+                return res.status(404).json({ success: false, message: "User not found" });
+            }
+            res.status(200).json({
+                success: true,
+                data: user
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal Server Error'
+            });
+        }
+    }
+
+    // Logout user
+    static logout = async (req, res) => {
+        try {
+            res.cookie('token', null, {
+                expires: new Date(Date.now()),
+                httpOnly: true
+            });
+
+            res.status(200).json({
+                success: true,
+                message: 'Logged Out'
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal Server Error'
+            });
+        }
+    }
 }
 
-
-module.exports = UserController
+module.exports = UserController;
